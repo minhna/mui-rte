@@ -92,7 +92,7 @@ interface IMUIRichTextEditorProps extends WithStyles<typeof styles> {
     toolbar?: boolean
     inlineToolbar?: boolean
     inlineToolbarControls?: Array<TToolbarControl>
-    keyBindingFn?: (e: SyntheticKeyboardEvent) => ?string
+    keyBindingFn?: (e: React.SyntheticEvent<{}>) => string | null
 }
 
 type IMUIRichTextEditorState = {
