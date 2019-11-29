@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState, useRef, 
+import React, { FunctionComponent, useEffect, useState, useRef,
     forwardRef, useImperativeHandle, RefForwardingComponent } from 'react'
 import Immutable from 'immutable'
 import classNames from 'classnames'
@@ -7,7 +7,7 @@ import { Paper } from '@material-ui/core'
 import {
     Editor, EditorState, convertFromRaw, RichUtils, AtomicBlockUtils,
     CompositeDecorator, convertToRaw, DefaultDraftBlockRenderMap, DraftEditorCommand,
-    DraftHandleValue, DraftStyleMap, ContentBlock, DraftDecorator, getVisibleSelectionRect, 
+    DraftHandleValue, DraftStyleMap, ContentBlock, DraftDecorator, getVisibleSelectionRect,
     SelectionState
 } from 'draft-js'
 import Toolbar, { TToolbarControl, TCustomControl } from './components/Toolbar'
@@ -92,6 +92,7 @@ interface IMUIRichTextEditorProps extends WithStyles<typeof styles> {
     toolbar?: boolean
     inlineToolbar?: boolean
     inlineToolbarControls?: Array<TToolbarControl>
+    keyBindingFn?: (e: SyntheticKeyboardEvent) => ?string
 }
 
 type IMUIRichTextEditorState = {
@@ -180,7 +181,9 @@ const useEditorState = (props: IMUIRichTextEditorProps) => {
 }
 
 const MUIRichTextEditor: RefForwardingComponent<any, IMUIRichTextEditorProps> = (props, ref) => {
-    const { classes, controls, customControls } = props
+    const {
+      classes, controls, customControls, keyBindingFn,
+    } = props
     const [state, setState] = useState<IMUIRichTextEditorState>({})
     const [focus, setFocus] = useState(false)
 
@@ -257,7 +260,7 @@ const MUIRichTextEditor: RefForwardingComponent<any, IMUIRichTextEditorProps> = 
         }
         setTimeout(() => {
             const selection = editorStateRef.current!.getSelection()
-            if (selection.isCollapsed() || (toolbarPositionRef !== undefined && 
+            if (selection.isCollapsed() || (toolbarPositionRef !== undefined &&
                 selectionRef.current.start === selection.getStartOffset() &&
                 selectionRef.current.end === selection.getEndOffset())) {
                     const selectionInfo = getSelectionInfo(editorStateRef.current!)
@@ -339,7 +342,7 @@ const MUIRichTextEditor: RefForwardingComponent<any, IMUIRichTextEditorProps> = 
         if (!block) {
             return
         }
-        const newEditorState = insertAtomicBlock(block.name.toUpperCase(), data, { 
+        const newEditorState = insertAtomicBlock(block.name.toUpperCase(), data, {
             selection: editorState.getCurrentContent().getSelectionAfter()
         })
         updateStateForPopover(newEditorState)
@@ -636,8 +639,8 @@ const MUIRichTextEditor: RefForwardingComponent<any, IMUIRichTextEditorProps> = 
         const contentState = editorState.getCurrentContent()
         const contentStateWithEntity = contentState.createEntity(type, 'IMMUTABLE', data)
         const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
-        const newEditorStateRaw = EditorState.set(editorState, { 
-            currentContent: contentStateWithEntity, 
+        const newEditorStateRaw = EditorState.set(editorState, {
+            currentContent: contentStateWithEntity,
             ...options
         })
         return AtomicBlockUtils.insertAtomicBlock(newEditorStateRaw, entityKey, ' ')
@@ -711,6 +714,7 @@ const MUIRichTextEditor: RefForwardingComponent<any, IMUIRichTextEditorProps> = 
                             onChange={handleChange}
                             readOnly={props.readOnly}
                             handleKeyCommand={handleKeyCommand}
+                            keyBindingFn={keyBindingFn}
                             ref={editorRef}
                         />
                     </div>
